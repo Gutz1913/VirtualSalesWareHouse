@@ -87,7 +87,9 @@ public class CountriesController : Controller
             return NotFound();
         }
 
-        var country = await _context.Countries.FindAsync(id);
+        var country = await _context.Countries
+            .Include(c => c.States)
+            .FirstOrDefaultAsync(c => c.Id == id);
         if (country == null)
         {
             return NotFound();
