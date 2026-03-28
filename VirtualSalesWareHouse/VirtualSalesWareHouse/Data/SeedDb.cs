@@ -1,13 +1,17 @@
 ﻿using VirtualSalesWareHouse.Data.Entities;
+using VirtualSalesWareHouse.Enums;
+using VirtualSalesWareHouse.Helpers;
 
 namespace VirtualSalesWareHouse.Data;
 
 public class SeedDb
 {
     private readonly DataContext _context;
-    public SeedDb(DataContext context)
+    private readonly IUserHelper _userHelper;
+    public SeedDb(DataContext context, IUserHelper userHelper)
     {
         _context = context;
+        _userHelper = userHelper;
     }
 
     public async Task SeedAsync()
@@ -15,6 +19,50 @@ public class SeedDb
         await _context.Database.EnsureCreatedAsync(); //Ensure the database is created and applies any pending migrations
         await CheckCategoriesAsync();
         await CheckCountriesAsync();
+        await CheckRolesAsync();
+        await CheckUserAsync("1010", "Andrés", "Gutiérrez", "gutz@yopmail.com", "300 131 04 24", "Calle Luna Calle Sol", UserType.Admin);
+    }
+
+
+    private async Task CheckCategoriesAsync()
+    {
+        if (!_context.Categories.Any())
+        {
+            _context.Categories.Add(new Category { Name = "Arte" });
+            _context.Categories.Add(new Category { Name = "Artesanías" });
+            _context.Categories.Add(new Category { Name = "Automotriz" });
+            _context.Categories.Add(new Category { Name = "Bebés" });
+            _context.Categories.Add(new Category { Name = "Belleza" });
+            _context.Categories.Add(new Category { Name = "Cuidado Personal" });
+            _context.Categories.Add(new Category { Name = "Cine y TV" });
+            _context.Categories.Add(new Category { Name = "Tecnología" });
+            _context.Categories.Add(new Category { Name = "Deportes" });
+            _context.Categories.Add(new Category { Name = "Actividades Al Aire Libre" });
+            _context.Categories.Add(new Category { Name = "Electrónicos" });
+            _context.Categories.Add(new Category { Name = "Electrodomésticos" });
+            _context.Categories.Add(new Category { Name = "Equipaje" });
+            _context.Categories.Add(new Category { Name = "Accesorios Para El Hogar" });
+            _context.Categories.Add(new Category { Name = "Construcción" });
+            _context.Categories.Add(new Category { Name = "Herramientas" });
+            _context.Categories.Add(new Category { Name = "Alimentos" });
+            _context.Categories.Add(new Category { Name = "Cocina" });
+            _context.Categories.Add(new Category { Name = "Industria" });
+            _context.Categories.Add(new Category { Name = "Ciencia" });
+            _context.Categories.Add(new Category { Name = "Mascotas" });
+            _context.Categories.Add(new Category { Name = "Juguetería" });
+            _context.Categories.Add(new Category { Name = "Librería" });
+            _context.Categories.Add(new Category { Name = "Moda Para Hombres" });
+            _context.Categories.Add(new Category { Name = "Moda Para Mujeres" });
+            _context.Categories.Add(new Category { Name = "Moda Para Niños" });
+            _context.Categories.Add(new Category { Name = "Moda Para Niñas" });
+            _context.Categories.Add(new Category { Name = "Música" });
+            _context.Categories.Add(new Category { Name = "Ofertas" });
+            _context.Categories.Add(new Category { Name = "Prime Video" });
+            _context.Categories.Add(new Category { Name = "Salud" });
+            _context.Categories.Add(new Category { Name = "Software" });
+            _context.Categories.Add(new Category { Name = "Video Juegos" });
+            await _context.SaveChangesAsync();
+        }
     }
 
     private async Task CheckCountriesAsync()
@@ -87,19 +135,40 @@ public class SeedDb
         await _context.SaveChangesAsync();
     }
 
-    private async Task CheckCategoriesAsync()
+    private async Task CheckRolesAsync()
     {
-        if (!_context.Categories.Any())
+        await _userHelper.CheckRoleAsync(UserType.Admin.ToString());
+        await _userHelper.CheckRoleAsync(UserType.User.ToString());
+    }
+
+    private async Task<User> CheckUserAsync(
+        string document, 
+        string firstName, 
+        string lastName, 
+        string email, 
+        string phone, 
+        string address, 
+        UserType userType)
+    {
+        User user = await _userHelper.GetUserAsync(email);
+        if (user == null)
         {
-            _context.Categories.Add(new Category { Name = "Tecnología" });
-            _context.Categories.Add(new Category { Name = "Ropa" });
-            _context.Categories.Add(new Category { Name = "Calzado" });
-            _context.Categories.Add(new Category { Name = "Belleza" });
-            _context.Categories.Add(new Category { Name = "Nutricion" });
-            _context.Categories.Add(new Category { Name = "Deportes" });
-            _context.Categories.Add(new Category { Name = "Apple" });
-            _context.Categories.Add(new Category { Name = "Mascotas" });
-            await _context.SaveChangesAsync();
+            user = new User
+            {
+                Document = document,
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                UserName = email,
+                PhoneNumber = phone,
+                Address = address,
+                City = _context.Cities.FirstOrDefault(),
+                UserType = userType
+            };
+
+            await _userHelper.AddUserAsync(user, "123456");
+            await _userHelper.AddUserToRoleAsync(user, userType.ToString());
         }
+        return user;
     }
 }
