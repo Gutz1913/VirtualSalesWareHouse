@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
+using VirtualSalesWareHouse.Models;
 
 namespace VirtualSalesWareHouse.Controllers;
 
@@ -17,7 +18,7 @@ public class CountriesController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        return View(await _context.Countries.ToListAsync());
+        return View(await _context.Countries.Include(c => c.States).ToListAsync());
     }
 
     [HttpGet]
@@ -29,6 +30,7 @@ public class CountriesController : Controller
         }
 
         var country = await _context.Countries
+            .Include(c => c.States) 
             .FirstOrDefaultAsync(m => m.Id == id);
         if (country == null)
         {
@@ -41,7 +43,8 @@ public class CountriesController : Controller
     [HttpGet]
     public IActionResult Create()
     {
-        return View();
+        Country country = new() { States = new List<State>() };
+        return View(country);
     }
 
 
@@ -137,7 +140,8 @@ public class CountriesController : Controller
         }
 
         var country = await _context.Countries
-            .FirstOrDefaultAsync(m => m.Id == id);
+            .Include(c => c.States)
+            .FirstOrDefaultAsync(c => c.Id == id);
         if (country == null)
         {
             return NotFound();
@@ -160,4 +164,129 @@ public class CountriesController : Controller
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
-}
+
+    [HttpGet]
+    public async Task<IActionResult> AddState(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var country = await _context.Countries.FindAsync(id);
+        if (country == null)
+        {
+            return NotFound();
+        }
+
+        StateViewModel model = new()
+        {
+            CountryId = country.Id,
+        };
+
+        return View(model);
+    }
+
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddState(StateViewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                State state = new()
+                {
+                    Cities = new List<City>(),
+                    Country = await _context.Countries.FindAsync(model.CountryId), 
+                    Name = model.Name,
+                };
+                _context.Add(state);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Details), new { Id = model.CountryId});
+            }
+            catch (DbUpdateException dbUpdateException)
+            {
+                if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                {
+                    ModelState.AddModelError(string.Empty, "Ya existe un departamento/estado con el mismo nombre en este país.");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                }
+            }
+            catch (Exception exception)
+            {
+                ModelState.AddModelError(string.Empty, exception.Message);
+            }
+        }
+        return View(model);
+    }
+
+    public async Task<IActionResult> EditState(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var state = await _context.States
+            .Include(s => s.Country)
+            .FirstOrDefaultAsync(s => s.Id == id); 
+        if (state == null)
+        {
+            return NotFound();
+        }
+
+        StateViewModel model = new()
+        {
+            CountryId = state.Country.Id,
+            Id = state.Id,
+            Name = state.Name,
+        };
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditState(int id, StateViewModel model)
+    {
+        if (id != model.Id)
+        {
+            return NotFound();
+        }
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                State state = new()
+                {
+                    Id = model.Id,
+                    Name = model.Name,
+                };
+                _context.Update(state);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Details), new { Id = model.CountryId });
+            }
+            catch (DbUpdateException dbUpdateException)
+            {
+                if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                {
+                    ModelState.AddModelError(string.Empty, "Ya existe un departamento/estado con el mismo nombre en este país.");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                }
+            }
+            catch (Exception exception)
+            {
+                ModelState.AddModelError(string.Empty, exception.Message);
+            }
+        }
+        return View(model);
+    }
+} 

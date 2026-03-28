@@ -9,9 +9,10 @@ public class DataContext : DbContext
     {        
     }
 
-    public DbSet<Country> Countries { get; set; }
-
     public DbSet<Category> Categories { get; set; }
+    public DbSet<City> Cities { get; set; }
+    public DbSet<Country> Countries { get; set; }    
+    public DbSet<State> States { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +25,16 @@ public class DataContext : DbContext
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasIndex(c => c.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<State>(entity =>
+        {
+            entity.HasIndex("Name", "CountryId").IsUnique();
+        });
+
+        modelBuilder.Entity<City>(entity =>
+        {
+            entity.HasIndex("Name", "StateId").IsUnique();
         });
     }
 }
