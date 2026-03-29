@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
 
 namespace VirtualSalesWareHouse.Controllers;
 
+[Authorize(Roles = "Admin")]
 public class CategoriesController : Controller
 {
     private readonly DataContext _context;

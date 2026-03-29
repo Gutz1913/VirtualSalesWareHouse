@@ -21,6 +21,7 @@ public class SeedDb
         await CheckCountriesAsync();
         await CheckRolesAsync();
         await CheckUserAsync("1010", "Andrés", "Gutiérrez", "gutz@yopmail.com", "300 131 04 24", "Calle Luna Calle Sol", UserType.Admin);
+        await CheckUserAsync("2020", "Fernando", "Valencia", "futz@yopmail.com", "300 313 40 42", "Calle Sol Calle Luna", UserType.User);
     }
 
 
