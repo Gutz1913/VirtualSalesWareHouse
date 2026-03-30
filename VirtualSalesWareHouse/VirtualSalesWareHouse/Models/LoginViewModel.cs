@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace VirtualSalesWareHouse.Models;
 
@@ -17,5 +16,5 @@ public class LoginViewModel
     public string Password { get; set; }
 
     [Display(Name = "Recordarme en este navegador")]
-    public string RememberMe { get; set; }
+    public bool RememberMe { get; set; }
 }
