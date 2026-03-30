@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
@@ -25,13 +25,14 @@ builder.Services.AddIdentity<User, IdentityRole>(cfg =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
+    options.LoginPath = "/Account/NotAuthorized";
     options.AccessDeniedPath = "/Account/NotAuthorized";
 });
 
 builder.Services.AddTransient<SeedDb>();
 builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<ICombosHelper, CombosHelper>();
+builder.Services.AddScoped<IBlobHelper, BlobHelper>();
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
 var app = builder.Build();

@@ -13,7 +13,7 @@ public class LoginViewModel
     [DataType(DataType.Password)]
     [Display(Name = "Contraseña")]
     [Required(ErrorMessage = "El campo {0} es obligatorio")]
-    [MinLength(6, ErrorMessage = "El campo {0} debe tener al menos {1} caractéres")]
+    [MinLength(6, ErrorMessage = "El campo {0} debe tener al menos {1} caracteres")]
     public string Password { get; set; }
 
     [Display(Name = "Recordarme en este navegador")]

@@ -212,7 +212,7 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un departamento/estado con el mismo nombre en este país.");
+                    ModelState.AddModelError(string.Empty, "Ya existe un Departamento / Estado con el mismo nombre en este país.");
                 }
                 else
                 {
@@ -278,7 +278,7 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un departamento/estado con el mismo nombre en este país.");
+                    ModelState.AddModelError(string.Empty, "Ya existe un Departamento / Estado con el mismo nombre en este país.");
                 }
                 else
                 {
@@ -389,7 +389,7 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe una ciudad con el mismo nombre en este departamento/estado.");
+                    ModelState.AddModelError(string.Empty, "Ya existe una ciudad con el mismo nombre en este Departamento / Estado.");
                 }
                 else
                 {
@@ -455,7 +455,7 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe una ciudad con el mismo nombre en este departamento/estado.");
+                    ModelState.AddModelError(string.Empty, "Ya existe una ciudad con el mismo nombre en este Departamento / Estado.");
                 }
                 else
                 {
