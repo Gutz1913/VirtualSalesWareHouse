@@ -16,5 +16,5 @@ public class LoginViewModel
     public string Password { get; set; }
 
     [Display(Name = "Recordarme en este navegador")]
-    public bool RememberMe { get; set; }
+    public string RememberMe { get; set; }
 }
