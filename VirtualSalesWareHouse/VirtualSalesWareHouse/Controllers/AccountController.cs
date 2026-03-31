@@ -6,6 +6,7 @@ using VirtualSalesWareHouse.Data.Entities;
 using VirtualSalesWareHouse.Enums;
 using VirtualSalesWareHouse.Helpers;
 using VirtualSalesWareHouse.Models;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace VirtualSalesWareHouse.Controllers;
 
@@ -40,12 +41,21 @@ public class AccountController : Controller
     {
         if (ModelState.IsValid)
         {
-            Microsoft.AspNetCore.Identity.SignInResult result = await _userHelper.LoginAsync(model);
+            SignInResult result = await _userHelper.LoginAsync(model);
             if (result.Succeeded)
             {
                 return RedirectToAction("Index", "Home");
             }
-            ModelState.AddModelError(string.Empty, "Email o contraseña incorrectos.");
+
+            if (result.IsLockedOut)
+            {
+                ModelState.AddModelError(string.Empty, "Cuenta bloqueada temporalmente, intenta nuevamente en unos minutos.");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Email o contraseña incorrectos.");
+            }
+
         }
         return View(model);
     }
