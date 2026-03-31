@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using VirtualSalesWareHouse.Common;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
 using VirtualSalesWareHouse.Enums;
@@ -16,13 +17,15 @@ public class AccountController : Controller
     private readonly DataContext _context;
     private readonly ICombosHelper _combosHelper;
     private readonly IBlobHelper _blobHelper;
+    private readonly IMailHelper _mailHelper;
 
-    public AccountController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper)
+    public AccountController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper, IMailHelper mailHelper)
     {
         _userHelper = userHelper;
         _context = context;
         _combosHelper = combosHelper;
         _blobHelper = blobHelper;
+        _mailHelper = mailHelper;
     }
 
     [HttpGet]
@@ -49,7 +52,11 @@ public class AccountController : Controller
 
             if (result.IsLockedOut)
             {
-                ModelState.AddModelError(string.Empty, "Cuenta bloqueada temporalmente, intenta nuevamente en unos minutos.");
+                ModelState.AddModelError(string.Empty, "Ha superado el máximo número de intentos, su cuenta ha sido bloqueada temporalmente, intenta nuevamente en 5 minutos.");
+            }
+            else if (result.IsNotAllowed)
+            {
+                ModelState.AddModelError(string.Empty, "El usuario no ha sido habilitado, debes seguir las instrucciones del correo enviado para poder habilitarte en el sistema.");
             }
             else
             {
@@ -109,25 +116,53 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            LoginViewModel loginViewModel = new()
+            string myToken = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+            string tokenLink = Url.Action("ConfirmEmail", "Account", new
             {
-                Password = model.Password,
-                RememberMe = "false",
-                UserName = model.Username,
-            };
+                userid = user.Id,
+                token = myToken
+            }, protocol: HttpContext.Request.Scheme);
 
-            var result2 = await _userHelper.LoginAsync(loginViewModel);
-
-            if (result2.Succeeded)
+            Response response = _mailHelper.SendMail(
+                $"{model.FirstName} {model.LastName}",
+                model.Username,
+                "Virtual Sales WareHouse - Confirmación de Email",
+                $"<h1>Virtual Sales WareHouse - Confirmación de Email</h1>" +
+                    $"Para habilitar el usuario, por favor hacer click en el siguiente enlace:, " + 
+                    $"<hr/><br/><p><a href= \"{tokenLink}\">Confirmar Email</a></p>");
+            if (response.IsSuccess)
             {
-                return RedirectToAction("Index", "Home");
+                ViewBag.Message = "Las instrucciones para habilitar el usuario han sido enviadas al correo.";
+                return View(model);
             }
+
+            ModelState.AddModelError(string.Empty, response.Message);
+        }
+            model.Countries = await _combosHelper.GetComboCountriesAsync();
+            model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);
+            model.Cities = await _combosHelper.GetComboCitiesAsync(model.StateId);
+            return View(model);
         }
 
-        model.Countries = await _combosHelper.GetComboCountriesAsync();
-        model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);
-        model.Cities = await _combosHelper.GetComboCitiesAsync(model.StateId);
-        return View(model);
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+        {
+            return NotFound();
+        }
+
+        User user = await _userHelper.GetUserAsync(new Guid(userId));
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        IdentityResult result = await _userHelper.ConfirmEmailAsync(user, token);
+        if (!result.Succeeded)
+        {
+            return NotFound();
+        }
+        return View();
     }
 
     public JsonResult GetStates(int countryId)
@@ -250,5 +285,5 @@ public class AccountController : Controller
         }
 
         return View(model);
-    } 
+    }
 }

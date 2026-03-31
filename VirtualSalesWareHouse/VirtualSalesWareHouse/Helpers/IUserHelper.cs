@@ -17,4 +17,6 @@ public interface IUserHelper
     Task LogoutAsync();
     Task<IdentityResult> ChangePasswordAsync(User user, string oldPassword, string newPassword);
     Task<IdentityResult> UpdateUserAsync(User user);
+    Task<string> GenerateEmailConfirmationTokenAsync(User user);
+    Task<IdentityResult> ConfirmEmailAsync(User user, string token);
 }
