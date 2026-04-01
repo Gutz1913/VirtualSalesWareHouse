@@ -128,7 +128,7 @@ public class AccountController : Controller
                 model.Username,
                 "Virtual Sales WareHouse - Confirmación de Email",
                 $"<h1>Virtual Sales WareHouse - Confirmación de Email</h1>" +
-                    $"Para habilitar el usuario, por favor hacer click en el siguiente enlace:, " + 
+                    $"Para habilitar el usuario, por favor hacer click en el siguiente enlace:, " +
                     $"<hr/><br/><p><a href= \"{tokenLink}\">Confirmar Email</a></p>");
             if (response.IsSuccess)
             {
@@ -138,11 +138,11 @@ public class AccountController : Controller
 
             ModelState.AddModelError(string.Empty, response.Message);
         }
-            model.Countries = await _combosHelper.GetComboCountriesAsync();
-            model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);
-            model.Cities = await _combosHelper.GetComboCitiesAsync(model.StateId);
-            return View(model);
-        }
+        model.Countries = await _combosHelper.GetComboCountriesAsync();
+        model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);
+        model.Cities = await _combosHelper.GetComboCitiesAsync(model.StateId);
+        return View(model);
+    }
 
     public async Task<IActionResult> ConfirmEmail(string userId, string token)
     {
@@ -284,6 +284,67 @@ public class AccountController : Controller
             }
         }
 
+        return View(model);
+    }
+
+    public IActionResult RecoverPassword()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RecoverPassword(RecoverPasswordViewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            User user = await _userHelper.GetUserAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "No se ha encontrado ningún usuario registrado con ese Email.");
+                return View(model);
+            }
+            string myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+            string link = Url.Action(
+                "ResetPassword",
+                "Account",
+                new { token = myToken }, protocol: HttpContext.Request.Scheme);
+            _mailHelper.SendMail(
+                $"{user.FullName}",
+                model.Email,
+                "Virtual Sales WareHouse - Recuperación de Contraseña",
+                $"<h1>Virtual Sales WareHouse - Recuperación de Contraseña</h1>" +
+                    $"Para recuperar tu contraseña, por favor hacer click en el siguiente enlace:, " +
+                    $"<p><a href= \"{link}\">Recuperar Contraseña</a></p>");
+            ViewBag.Message = "Las instrucciones para recuperar la contraseña han sido enviadas a su correo.";
+            return View();
+        }
+        return View(model);
+    }
+
+    public IActionResult ResetPassword(string token)
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+    {
+        User user = await _userHelper.GetUserAsync(model.Username);
+        if (ModelState.IsValid)
+        {
+            if (user != null)
+            {
+                IdentityResult result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
+                if (result.Succeeded)
+                {
+                    ViewBag.Message = "La contraseña ha sido cambiada exitosamente.";
+                    return View();
+                }
+                ViewBag.Message = "Error mientras se intentaba cambiar la contraseña.";
+                return View(model);
+            }            
+        }
+        ViewBag.Message = "Usuario no encontrado.";
         return View(model);
     }
 }
