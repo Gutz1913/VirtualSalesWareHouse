@@ -17,7 +17,6 @@ public class Product
     [MaxLength(500, ErrorMessage = "El campo {0} debe tener máximo {1} caracteres.")]
     public string Description { get; set; }
 
-    [Column(TypeName = "decimal(18,2)")]
     [DisplayFormat(DataFormatString = "0:C2")]
     [Display(Name = "Precio")]
     [Required(ErrorMessage = "El campo {0} es obligatorio.")]
@@ -26,7 +25,7 @@ public class Product
     [DisplayFormat(DataFormatString = "0:N2")]
     [Display(Name = "Inventario")]
     [Required(ErrorMessage = "El campo {0} es obligatorio.")]
-    public decimal Stock { get; set; }
+    public float Stock { get; set; }
 
     public ICollection<ProductCategory> ProductCategories { get; set; }
 
@@ -36,10 +35,10 @@ public class Product
     public ICollection<ProductImage> ProductImages { get; set; }
 
     [Display(Name = "Fotos")]
-    public int ImageNumber => ProductImages == null ? 0 : ProductImages.Count;
+    public int ImagesNumber => ProductImages == null ? 0 : ProductImages.Count;
 
     [Display(Name = "Foto")]
     public string ImageFullPath => ProductImages == null || ProductImages.Count == 0
-        ? $"https://virtualsaleswarehouse.blob.core.windows.net/products/noimage.png"
+        ? $"https://localhost:7028/Images/noimage.png"
         : ProductImages.FirstOrDefault().ImageFullPath; 
 }
