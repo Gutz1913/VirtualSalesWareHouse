@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
@@ -183,5 +184,57 @@ public class ProductsController : Controller
             return NotFound();
         }
         return View(product);
+    }
+
+    public async Task<IActionResult> AddImage(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        Product product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        AddProductImageViewModel model = new()
+        {
+            ProductId = product.Id
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddImage(AddProductImageViewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            Guid imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "products");
+
+            Product product = await _context.Products.FindAsync(model.ProductId);
+            ProductImage productImage = new()
+            {
+                Product = product,
+                ImageId = imageId,
+            };
+
+            try
+            {
+                _context.Add(productImage);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Details), new { Id = product.Id });
+            }
+            catch (Exception ex)
+            {
+
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+        }
+
+        return View(model);
     }
 }
