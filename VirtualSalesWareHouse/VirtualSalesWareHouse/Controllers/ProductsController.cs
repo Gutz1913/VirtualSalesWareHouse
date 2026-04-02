@@ -165,4 +165,23 @@ public class ProductsController : Controller
         }
         return View(model);
     }
+
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        Product product = await _context.Products
+            .Include(p => p.ProductImages)
+            .Include(p => p.ProductCategories)
+            .ThenInclude(pc => pc.Category)
+            .FirstOrDefaultAsync(p => p.Id == id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+        return View(product);
+    }
 }
