@@ -12,7 +12,7 @@ using VirtualSalesWareHouse.Data;
 namespace VirtualSalesWareHouse.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260401201807_DbUntilProducts")]
+    [Migration("20260401230341_DbUntilProducts")]
     partial class DbUntilProducts
     {
         /// <inheritdoc />
@@ -247,8 +247,8 @@ namespace VirtualSalesWareHouse.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("Stock")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<float>("Stock")
+                        .HasColumnType("real");
 
                     b.HasKey("Id");
 

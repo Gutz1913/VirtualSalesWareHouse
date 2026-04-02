@@ -244,8 +244,8 @@ namespace VirtualSalesWareHouse.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("Stock")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<float>("Stock")
+                        .HasColumnType("real");
 
                     b.HasKey("Id");
 
