@@ -61,6 +61,7 @@ public class SeedDb
             _context.Categories.Add(new Category { Name = "Salud" });
             _context.Categories.Add(new Category { Name = "Software" });
             _context.Categories.Add(new Category { Name = "Video Juegos" });
+            _context.Categories.Add(new Category { Name = "Gamer" });
             await _context.SaveChangesAsync();
         }
     }
