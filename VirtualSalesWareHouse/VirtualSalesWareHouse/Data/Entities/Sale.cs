@@ -18,6 +18,7 @@ public class Sale
     [Display(Name = "Comentarios")]
     public string? Remarks { get; set; }
 
+    [Display(Name = "Estado")]
     public OrderStatus OrderStatus { get; set; }
 
     public ICollection<SaleDetail> SaleDetails { get; set; }
