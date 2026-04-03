@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
@@ -165,6 +166,91 @@ public class HomeController : Controller
         _context.TemporalSales.Add(temporalSale);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
+    }
+
+    [Authorize]
+    public async Task<IActionResult> ShowCart()
+    {
+        User user = await _userHelper.GetUserAsync(User.Identity.Name);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        List<TemporalSale>? temporalSales = await _context.TemporalSales
+            .Include(ts => ts.Product)
+            .ThenInclude(p => p.ProductImages)
+            .Where(ts => ts.User.Id == user.Id)
+            .ToListAsync();
+
+        ShowCartViewModel model = new()
+        {
+            User = user,
+            TemporalSales = temporalSales,
+        };
+
+        return View(model);
+    }
+
+    public async Task<IActionResult> DecreaseQuantity(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        TemporalSale temporalSale = await _context.TemporalSales.FindAsync(id);
+        if (temporalSale == null)
+        {
+            return NotFound();
+        }
+
+        if (temporalSale.Quantity > 1)
+        {
+            temporalSale.Quantity--;
+            _context.TemporalSales.Update(temporalSale);
+            await _context.SaveChangesAsync();
+        }
+
+        return RedirectToAction(nameof(ShowCart));
+    }
+
+    public async Task<IActionResult> IncreaseQuantity(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        TemporalSale temporalSale = await _context.TemporalSales.FindAsync(id);
+        if (temporalSale == null)
+        {
+            return NotFound();
+        }
+
+        temporalSale.Quantity++;
+        _context.TemporalSales.Update(temporalSale);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(ShowCart));
+    }
+
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        TemporalSale temporalSale = await _context.TemporalSales.FindAsync(id);
+        if (temporalSale == null)
+        {
+            return NotFound();
+        }
+
+        _context.TemporalSales.Remove(temporalSale);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(ShowCart));
     }
 
 }
