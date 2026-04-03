@@ -177,7 +177,7 @@ public class HomeController : Controller
             return NotFound();
         }
 
-        List<TemporalSale>? temporalSales = await _context.TemporalSales
+        List<TemporalSale> temporalSales = await _context.TemporalSales
             .Include(ts => ts.Product)
             .ThenInclude(p => p.ProductImages)
             .Where(ts => ts.User.Id == user.Id)
@@ -251,6 +251,60 @@ public class HomeController : Controller
         _context.TemporalSales.Remove(temporalSale);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(ShowCart));
+    }
+
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        TemporalSale temporalSale = await _context.TemporalSales.FindAsync(id);
+        if (temporalSale == null)
+        {
+            return NotFound();
+        }
+
+        EditTemporalSaleViewModel model = new()
+        {
+            Id = temporalSale.Id,
+            Quantity = temporalSale.Quantity,
+            Remarks = temporalSale.Remarks,
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, EditTemporalSaleViewModel model)
+    {
+        if (id != model.Id)
+        {
+            return NotFound();
+        }
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                TemporalSale temporalSale = await _context.TemporalSales.FindAsync(id);
+                temporalSale.Quantity = model.Quantity;
+                temporalSale.Remarks = model.Remarks;
+                _context.Update(temporalSale);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception exception)
+            {
+                ModelState.AddModelError(string.Empty, exception.Message);
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(ShowCart));
+        }
+
+        return View(model);
     }
 
 }
