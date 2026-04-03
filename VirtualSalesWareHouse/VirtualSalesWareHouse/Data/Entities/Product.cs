@@ -41,5 +41,7 @@ public class Product
     [Display(Name = "Foto")]
     public string ImageFullPath => ProductImages == null || ProductImages.Count == 0
         ? $"https://localhost:7028/Images/noimage.png"
-        : ProductImages.FirstOrDefault().ImageFullPath; 
+        : ProductImages.FirstOrDefault().ImageFullPath;
+
+    public ICollection<SaleDetail> SaleDetails { get; set; }
 }
