@@ -46,6 +46,9 @@ public class SeedDb
             await AddProductAsync("Tenis Adidas", 350000M, 18F, new List<string>() { "Deportes", "Calzado" }, new List<string>() { "Tenis1.png", "Tenis2.png" });
             await AddProductAsync("Iphone 17 Pro Max", 8000000M, 25F, new List<string>() { "Tecnología", "Apple" }, new List<string>() { "Iphone1.png", "Iphone2.png", "Iphone3.png", "Iphone4.png" });
             await AddProductAsync("Conjunto Adidas Anime", 650000M, 2F, new List<string>() { "Deportes", "Moda Para Hombres", "Moda Para Mujeres", "Moda Para Niños", "Moda Para Niñas" }, new List<string>() { "Prenda1.png" });
+            await AddProductAsync("Xbox Series", 3500000M, 2F, new List<string>() { "Video Juegos", "Tecnología", "Electrónicos", "Gamer" }, new List<string>() { "xboxseries1.png" });
+            await AddProductAsync("Play Station 5", 3800000M, 10F, new List<string>() { "Video Juegos", "Tecnología", "Gamer", "Electrónicos" }, new List<string>() { "playstation51.png", "playstation52.png", "playstation53.png", "playstation54.png", "playstation55.png" });
+            await AddProductAsync("Nintendo Switch 2", 2850000M, 10F, new List<string>() { "Video Juegos", "Tecnología", "Gamer", "Electrónicos" }, new List<string>() { "nintendoswitch1.png", "nintendoswitch2.png" });
             await _context.SaveChangesAsync();
         }
     }
