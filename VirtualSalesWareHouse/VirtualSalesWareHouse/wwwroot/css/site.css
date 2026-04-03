@@ -35,6 +35,20 @@ html {
         transform: scale(2);
     }
 
+/* carousel */
+.carousel-inner {
+    width: auto;
+    height: 500px;
+    max-height: 500px !important;
+}
+
+.carousel-content {
+    color: black;
+    display: flex;
+    text-align: center;
+}
+
+
 
 body {
     margin-bottom: 60px;
