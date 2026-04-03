@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VirtualSalesWareHouse.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSalesAndSaleDetailsEntities : Migration
+    public partial class AddSaleAndSaleDetailsEntities : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

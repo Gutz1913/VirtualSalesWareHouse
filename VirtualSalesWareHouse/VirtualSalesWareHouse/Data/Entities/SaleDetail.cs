@@ -10,7 +10,7 @@ public class SaleDetail
 
     [DataType(DataType.MultilineText)]
     [Display(Name = "Comentarios")]
-    public string? Remarks { get; set; }
+    public string Remarks { get; set; }
 
     public Product Product { get; set; }
 

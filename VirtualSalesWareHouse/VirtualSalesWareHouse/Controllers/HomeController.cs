@@ -307,4 +307,9 @@ public class HomeController : Controller
         return View(model);
     }
 
+    [Authorize]
+    public IActionResult OrderSuccess()
+    {
+        return View();
+    }
 }

@@ -12,8 +12,8 @@ using VirtualSalesWareHouse.Data;
 namespace VirtualSalesWareHouse.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260403213433_AddSalesAndSaleDetailsEntities")]
-    partial class AddSalesAndSaleDetailsEntities
+    [Migration("20260403220441_AddSaleAndSaleDetailsEntities")]
+    partial class AddSaleAndSaleDetailsEntities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
