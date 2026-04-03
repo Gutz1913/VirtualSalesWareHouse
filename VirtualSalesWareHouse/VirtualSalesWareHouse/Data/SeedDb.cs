@@ -1,6 +1,7 @@
 ﻿using VirtualSalesWareHouse.Data.Entities;
 using VirtualSalesWareHouse.Enums;
 using VirtualSalesWareHouse.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace VirtualSalesWareHouse.Data;
 
@@ -8,10 +9,13 @@ public class SeedDb
 {
     private readonly DataContext _context;
     private readonly IUserHelper _userHelper;
-    public SeedDb(DataContext context, IUserHelper userHelper)
+    private readonly IBlobHelper _blobHelper;
+
+    public SeedDb(DataContext context, IUserHelper userHelper, IBlobHelper blobHelper)
     {
         _context = context;
         _userHelper = userHelper;
+        _blobHelper = blobHelper;
     }
 
     public async Task SeedAsync()
@@ -20,8 +24,57 @@ public class SeedDb
         await CheckCategoriesAsync();
         await CheckCountriesAsync();
         await CheckRolesAsync();
-        await CheckUserAsync("1152192792", "Andrés Fernando", "Gutiérrez Valencia", "gutz@yopmail.com", "300 131 04 24", "Cra 78 # 42-42", UserType.Admin);
-        await CheckUserAsync("1010", "Firulais", "Firulo", "firulo@yopmail.com", "300 131 04 24", "Cra 78 # 42-42", UserType.User);
+        await CheckUserAsync("avatar10.png", "1010", "Andrés", "Gutiérrez", "gutz@yopmail.com", "300 131 04 24", "Calle Luna Calle Sol", UserType.Admin);
+        await CheckUserAsync("avatar6.png", "2020", "Carlos", "Londoño", "carlos@yopmail.com", "320 423 34 14", "Calle Luna Calle Sol", UserType.User);
+        await CheckUserAsync("avatar3.png", "3030", "Mercedes", "Colorado", "mercedes@yopmail.com", "312 342 43 54", "Calle Luna Calle Sol", UserType.User);
+        await CheckUserAsync("avatar1.png", "4040", "Sebastián", "Valencia", "sebas@yopmail.com", "315 647 57 24", "Calle Luna Calle Sol", UserType.User);
+        await CheckUserAsync("avatar7.png", "5050", "Oscar", "Valencia", "oscar@yopmail.com", "378 527 42 88", "Calle Luna Calle Sol", UserType.User);
+        await CheckUserAsync("avatar8.png", "6060", "Matías", "Velasquez", "matias@yopmail.com", "314 532 64 29", "Calle Luna Calle Sol", UserType.User);
+        await CheckUserAsync("avatar5.png", "7070", "Emiliano", "Gutiérrez", "matias@yopmail.com", "350 214 33 56", "Calle Luna Calle Sol", UserType.User);
+        await CheckUserAsync("avatar9.png", "8080", "Fabiola", "Colorado", "fabiola@yopmail.com", "313 580 14 44", "Calle Luna Calle Sol", UserType.User);
+        await CheckUserAsync("avatar2.png", "9090", "Randy", "Acosta", "randy@yopmail.com", "320 234 76 89", "Calle Luna Calle Sol", UserType.User);
+        await CheckUserAsync("avatar4.png", "1111", "Firulais", "Acosta", "randy@yopmail.com", "320 234 76 89", "Calle Luna Calle Sol", UserType.User);
+        await CheckProductsAsync();
+    }
+
+    private async Task CheckProductsAsync()
+    {
+        if (!_context.Products.Any())
+        {
+            await AddProductAsync("Mouse Gamer", 132000M, 12F, new List<string>() { "Gamer", "Tecnología", "Video Juegos" }, new List<string>() { "mouse1.png", "mouse2.png", "mouse3.png", "mouse4.png" });
+            await AddProductAsync("Silla Gamer", 450000M, 18F, new List<string>() { "Gamer", "Video Juegos" }, new List<string>() { "Silla1.png", "Silla2.png", "Silla3.png", "Silla4.png" });
+            await AddProductAsync("Tenis Adidas", 350000M, 18F, new List<string>() { "Deportes", "Calzado" }, new List<string>() { "Tenis1.png", "Tenis2.png" });
+            await AddProductAsync("Iphone 17 Pro Max", 8000000M, 25F, new List<string>() { "Tecnología", "Apple" }, new List<string>() { "Iphone1.png", "Iphone2.png", "Iphone3.png", "Iphone4.png" });
+            await AddProductAsync("Conjunto Adidas Anime", 650000M, 2F, new List<string>() { "Deportes", "Moda Para Hombres", "Moda Para Mujeres", "Moda Para Niños", "Moda Para Niñas" }, new List<string>() { "Prenda1.png" });
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    private async Task AddProductAsync(string name, decimal price, float stock, List<string> categories, List<string> images)
+    {
+        Product prodcut = new()
+        {
+            Description = name,
+            Name = name,
+            Price = price,
+            Stock = stock,
+            ProductCategories = new List<ProductCategory>(),
+            ProductImages = new List<ProductImage>()
+        };
+
+        foreach (string? category in categories)
+        {
+            prodcut.ProductCategories.Add(new ProductCategory { Category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == category) });
+        }
+
+
+        foreach (string? image in images)
+        {
+            Guid imageId = await _blobHelper.UploadBlobAsync($"{Environment.CurrentDirectory}\\wwwroot\\images\\products\\{image}", "products");
+            prodcut.ProductImages.Add(new ProductImage { ImageId = imageId });
+        }
+
+        _context.Products.Add(prodcut);
     }
 
     private async Task CheckCategoriesAsync()
@@ -62,6 +115,8 @@ public class SeedDb
             _context.Categories.Add(new Category { Name = "Software" });
             _context.Categories.Add(new Category { Name = "Video Juegos" });
             _context.Categories.Add(new Category { Name = "Gamer" });
+            _context.Categories.Add(new Category { Name = "Apple" });
+            _context.Categories.Add(new Category { Name = "Calzado" });
             await _context.SaveChangesAsync();
         }
     }
@@ -143,19 +198,23 @@ public class SeedDb
     }
 
     private async Task<User> CheckUserAsync(
+        string image,
         string document, 
         string firstName, 
         string lastName, 
         string email, 
         string phone, 
-        string address, 
+        string address,
+        
         UserType userType)
     {
         User user = await _userHelper.GetUserAsync(email);
         if (user == null)
         {
+            Guid imageId = await _blobHelper.UploadBlobAsync($"{Environment.CurrentDirectory}\\wwwroot\\Images\\users\\{image}", "users");
             user = new User
             {
+                ImageId = imageId,
                 Document = document,
                 FirstName = firstName,
                 LastName = lastName,
