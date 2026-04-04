@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
 
@@ -10,9 +11,12 @@ namespace VirtualSalesWareHouse.Controllers;
 public class CategoriesController : Controller
 {
     private readonly DataContext _context;
-    public CategoriesController(DataContext context) 
+    private readonly IFlashMessage _flashMessage;
+
+    public CategoriesController(DataContext context, IFlashMessage flashMessage) 
     {
-        _context = context;        
+        _context = context;
+        _flashMessage = flashMessage;
     }
 
     [HttpGet]
@@ -43,16 +47,16 @@ public class CategoriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe una categoría con el mismo nombre.");
+                    _flashMessage.Danger("Ya existe una categoría con el mismo nombre.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
         }
         return View(category);
@@ -94,16 +98,16 @@ public class CategoriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe una categoría con el mismo nombre.");
+                    _flashMessage.Danger("Ya existe una categoría con el mismo nombre.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
         }
         return View(category);

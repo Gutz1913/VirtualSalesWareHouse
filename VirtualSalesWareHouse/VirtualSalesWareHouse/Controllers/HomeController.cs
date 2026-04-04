@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using Vereyon.Web;
 using VirtualSalesWareHouse.Common;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
@@ -16,13 +17,15 @@ public class HomeController : Controller
     private readonly DataContext _context;
     private readonly IUserHelper _userHelper;
     private readonly IOrdersHelper _ordersHelper;
+    private readonly IFlashMessage _flashMessage;
 
-    public HomeController(ILogger<HomeController> logger, DataContext context, IUserHelper userHelper, IOrdersHelper ordersHelper)
+    public HomeController(ILogger<HomeController> logger, DataContext context, IUserHelper userHelper, IOrdersHelper ordersHelper, IFlashMessage flashMessage)
     {
         _logger = logger;
         _context = context;
         _userHelper = userHelper;
         _ordersHelper = ordersHelper;
+        _flashMessage = flashMessage;
     }
 
     public async Task<IActionResult> Index()
@@ -219,7 +222,7 @@ public class HomeController : Controller
             return RedirectToAction(nameof(OrderSuccess));
         }
 
-        ModelState.AddModelError(string.Empty, response.Message);
+        _flashMessage.Danger(response.Message);
         return View(model);
     }
 
@@ -330,7 +333,7 @@ public class HomeController : Controller
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
                 return View(model);
             }
 

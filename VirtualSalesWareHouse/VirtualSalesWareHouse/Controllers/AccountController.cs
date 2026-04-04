@@ -139,7 +139,7 @@ public class AccountController : Controller
                 return RedirectToAction(nameof(Login));
             }
 
-            ModelState.AddModelError(string.Empty, response.Message);
+            _flashMessage.Danger(response.Message);
         }
         model.Countries = await _combosHelper.GetComboCountriesAsync();
         model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);
@@ -264,7 +264,7 @@ public class AccountController : Controller
         {
             if (model.OldPassword == model.NewPassword)
             {
-                ModelState.AddModelError(string.Empty, "Debes ingresar una contraseña diferente.");
+                _flashMessage.Danger("Debes ingresar una contraseña diferente.");
                 return View(model);
             }
 
@@ -278,12 +278,12 @@ public class AccountController : Controller
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault().Description);
+                    _flashMessage.Danger(result.Errors.FirstOrDefault().Description);
                 }
             }
             else
             {
-                ModelState.AddModelError(string.Empty, "Usuario no encontrado.");
+                _flashMessage.Danger("Usuario no encontrado.");
             }
         }
 

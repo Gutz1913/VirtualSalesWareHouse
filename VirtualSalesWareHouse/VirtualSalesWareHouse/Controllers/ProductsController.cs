@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
 using VirtualSalesWareHouse.Helpers;
@@ -15,12 +16,14 @@ public class ProductsController : Controller
     private readonly DataContext _context;
     private readonly ICombosHelper _combosHelper;
     private readonly IBlobHelper _blobHelper;
+    private readonly IFlashMessage _flashMessage;
 
-    public ProductsController(DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper)
+    public ProductsController(DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper, IFlashMessage flashMessage)
     {
         _context = context;
         _combosHelper = combosHelper;
         _blobHelper = blobHelper;
+        _flashMessage = flashMessage;
     }
 
     public async Task<IActionResult> Index()
@@ -87,16 +90,16 @@ public class ProductsController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un producto con el mismo nombre.");
+                    _flashMessage.Danger("Ya existe un producto con el mismo nombre.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                _flashMessage.Danger(ex.Message);
             }
         }
 
@@ -153,16 +156,16 @@ public class ProductsController : Controller
         {
             if (dbUpdateException.InnerException.Message.Contains("duplicate"))
             {
-                ModelState.AddModelError(string.Empty, "Ya existe un producto con el mismo nombre.");
+                _flashMessage.Danger("Ya existe un producto con el mismo nombre.");
             }
             else
             {
-                ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                _flashMessage.Danger(dbUpdateException.InnerException.Message);
             }
         }
         catch (Exception ex)
         {
-            ModelState.AddModelError(string.Empty, ex.Message);
+            _flashMessage.Danger(ex.Message);
         }
         return View(model);
     }
@@ -231,7 +234,7 @@ public class ProductsController : Controller
             catch (Exception ex)
             {
 
-                ModelState.AddModelError(string.Empty, ex.Message);
+                _flashMessage.Danger(ex.Message);
             }
         }
 
@@ -313,7 +316,7 @@ public class ProductsController : Controller
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                _flashMessage.Danger(ex.Message);
             }
         }
 

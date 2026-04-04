@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
 using VirtualSalesWareHouse.Models;
@@ -11,10 +12,12 @@ namespace VirtualSalesWareHouse.Controllers;
 public class CountriesController : Controller
 {
     private readonly DataContext _context;
+    private readonly IFlashMessage _flashMessage;
 
-    public CountriesController(DataContext context)
+    public CountriesController(DataContext context, IFlashMessage flashMessage)
     {
         _context = context;
+        _flashMessage = flashMessage;
     }
 
     [HttpGet]
@@ -67,16 +70,16 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
+                    _flashMessage.Danger("Ya existe un país con el mismo nombre.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
         }
         return View(country);
@@ -121,16 +124,16 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
+                    _flashMessage.Danger("Ya existe un país con el mismo nombre.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
         }
         return View(country);
@@ -212,16 +215,16 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un Departamento / Estado con el mismo nombre en este país.");
+                    _flashMessage.Danger("Ya existe un Departamento / Estado con el mismo nombre en este país.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
         }
         return View(model);
@@ -278,16 +281,16 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un Departamento / Estado con el mismo nombre en este país.");
+                    _flashMessage.Danger("Ya existe un Departamento / Estado con el mismo nombre en este país.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
         }
         return View(model);
@@ -389,16 +392,16 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe una ciudad con el mismo nombre en este Departamento / Estado.");
+                    _flashMessage.Danger("Ya existe una ciudad con el mismo nombre en este Departamento / Estado.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
         }
         return View(model);
@@ -455,16 +458,16 @@ public class CountriesController : Controller
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe una ciudad con el mismo nombre en este Departamento / Estado.");
+                    _flashMessage.Danger("Ya existe una ciudad con el mismo nombre en este Departamento / Estado.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception exception)
             {
-                ModelState.AddModelError(string.Empty, exception.Message);
+                _flashMessage.Danger(exception.Message);
             }
         }
         return View(model);

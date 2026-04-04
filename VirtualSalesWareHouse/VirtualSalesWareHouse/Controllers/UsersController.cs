@@ -72,7 +72,7 @@ public class UsersController : Controller
             User user = await _userHelper.AddUserAsync(model);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Este correo ya está siendo usado.");
+                _flashMessage.Danger("Este correo ya está siendo usado.");
                 model.Countries = await _combosHelper.GetComboCountriesAsync();
                 model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);
                 model.Cities = await _combosHelper.GetComboCitiesAsync(model.StateId);
@@ -99,7 +99,7 @@ public class UsersController : Controller
                 return View(model);
             }
 
-            ModelState.AddModelError(string.Empty, response.Message);
+            _flashMessage.Danger(response.Message);
         }
 
         model.Countries = await _combosHelper.GetComboCountriesAsync();
