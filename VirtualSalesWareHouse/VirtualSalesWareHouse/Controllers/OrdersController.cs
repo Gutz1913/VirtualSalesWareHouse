@@ -9,7 +9,7 @@ using VirtualSalesWareHouse.Helpers;
 
 namespace VirtualSalesWareHouse.Controllers;
 
-[Authorize(Roles = "Admin")]
+
 public class OrdersController : Controller
 {
     private readonly DataContext _context;
@@ -22,6 +22,8 @@ public class OrdersController : Controller
         _flashMessage = flashMessage;
         _ordersHelper = ordersHelper;
     }
+
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Index()
     {
         return View(await _context.Sales
@@ -31,6 +33,7 @@ public class OrdersController : Controller
             .ToListAsync());
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null)
@@ -52,6 +55,7 @@ public class OrdersController : Controller
         return View(sale);
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Dispatch(int? id)
     {
         if (id == null)
@@ -80,6 +84,7 @@ public class OrdersController : Controller
         return RedirectToAction(nameof(Details), new { Id = sale.Id });
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Send(int? id)
     {
         if (id == null)
@@ -108,6 +113,7 @@ public class OrdersController : Controller
         return RedirectToAction(nameof(Details), new { Id = sale.Id });
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Confirm(int? id)
     {
         if (id == null)
@@ -136,6 +142,7 @@ public class OrdersController : Controller
         return RedirectToAction(nameof(Details), new { Id = sale.Id });
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Cancel(int? id)
     {
         if (id == null)
@@ -160,6 +167,39 @@ public class OrdersController : Controller
         }
 
         return RedirectToAction(nameof(Details), new { Id = sale.Id });
+    }
+
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> MyOrders()
+    {
+        return View(await _context.Sales
+            .Include(s => s.User)
+            .Include(s => s.SaleDetails)
+            .ThenInclude(sd => sd.Product)
+            .Where(s => s.User.UserName == User.Identity.Name)
+            .ToListAsync());
+    }
+
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> MyDetails(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        Sale sale = await _context.Sales
+            .Include(s => s.User)
+            .Include(s => s.SaleDetails)
+            .ThenInclude(sd => sd.Product)
+            .ThenInclude(p => p.ProductImages)
+            .FirstOrDefaultAsync(s => s.Id == id);
+        if (sale == null)
+        {
+            return NotFound();
+        }
+
+        return View(sale);
     }
 }
 
