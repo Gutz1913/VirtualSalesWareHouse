@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 using VirtualSalesWareHouse.Common;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
@@ -18,14 +19,16 @@ public class UsersController : Controller
     private readonly IBlobHelper _blobHelper;
     private readonly ICombosHelper _combosHelper;
     private readonly IMailHelper _mailHelper;
+    private readonly IFlashMessage _flashMessage;
 
-    public UsersController(DataContext context, IUserHelper userHelper, IBlobHelper blobHelper, ICombosHelper combosHelper, IMailHelper mailHelper)
+    public UsersController(DataContext context, IUserHelper userHelper, IBlobHelper blobHelper, ICombosHelper combosHelper, IMailHelper mailHelper, IFlashMessage flashMessage)
     {
         _context = context;
         _userHelper = userHelper;
         _blobHelper = blobHelper;
         _combosHelper = combosHelper;
         _mailHelper = mailHelper;
+        _flashMessage = flashMessage;
     }
 
     [HttpGet]
@@ -92,7 +95,7 @@ public class UsersController : Controller
                     $"<hr/><br/><p><a href= \"{tokenLink}\">Confirmar Email</a></p>");
             if (response.IsSuccess)
             {
-                ViewBag.Message = "Las instrucciones para habilitar el administrador han sido enviadas al correo.";
+                _flashMessage.Info("Las instrucciones para habilitar al nuevo administrador han sido enviadas al correo");                
                 return View(model);
             }
 

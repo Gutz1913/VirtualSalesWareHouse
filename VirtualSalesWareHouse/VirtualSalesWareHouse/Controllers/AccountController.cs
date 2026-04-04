@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Vereyon.Web;
 using VirtualSalesWareHouse.Common;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
@@ -18,14 +19,16 @@ public class AccountController : Controller
     private readonly ICombosHelper _combosHelper;
     private readonly IBlobHelper _blobHelper;
     private readonly IMailHelper _mailHelper;
+    private readonly IFlashMessage _flashMessage;
 
-    public AccountController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper, IMailHelper mailHelper)
+    public AccountController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper, IMailHelper mailHelper, IFlashMessage flashMessage)
     {
         _userHelper = userHelper;
         _context = context;
         _combosHelper = combosHelper;
         _blobHelper = blobHelper;
         _mailHelper = mailHelper;
+        _flashMessage = flashMessage;
     }
 
     [HttpGet]
@@ -52,15 +55,15 @@ public class AccountController : Controller
 
             if (result.IsLockedOut)
             {
-                ModelState.AddModelError(string.Empty, "Ha superado el máximo número de intentos, su cuenta ha sido bloqueada temporalmente, intenta nuevamente en 5 minutos.");
+                _flashMessage.Danger("Ha superado el máximo número de intentos, su cuenta ha sido bloqueada, intente de nuevo en 5 minutos.");
             }
             else if (result.IsNotAllowed)
             {
-                ModelState.AddModelError(string.Empty, "El usuario no ha sido habilitado, debes seguir las instrucciones del correo enviado para poder habilitarte en el sistema.");
+                _flashMessage.Danger("El usuario no ha sido habilitado, debes de seguir las instrucciones enviadas al correo para poder habilitarlo.");
             }
             else
             {
-                ModelState.AddModelError(string.Empty, "Email o contraseña incorrectos.");
+                _flashMessage.Danger("Email o contraseña incorrectos.");
             }
 
         }
@@ -109,7 +112,7 @@ public class AccountController : Controller
             User user = await _userHelper.AddUserAsync(model);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Este correo ya está siendo utilizado.");
+                _flashMessage.Danger("Este correo ya está siendo usado.");
                 model.Countries = await _combosHelper.GetComboCountriesAsync();
                 model.States = await _combosHelper.GetComboStatesAsync(model.CountryId);
                 model.Cities = await _combosHelper.GetComboCitiesAsync(model.StateId);
@@ -132,8 +135,8 @@ public class AccountController : Controller
                     $"<hr/><br/><p><a href= \"{tokenLink}\">Confirmar Email</a></p>");
             if (response.IsSuccess)
             {
-                ViewBag.Message = "Las instrucciones para habilitar el usuario han sido enviadas al correo.";
-                return View(model);
+                _flashMessage.Info("Usuario registrado. Para poder ingresar al sistema, siga las instrucciones que han sido enviadas a su correo.");
+                return RedirectToAction(nameof(Login));
             }
 
             ModelState.AddModelError(string.Empty, response.Message);
@@ -300,7 +303,7 @@ public class AccountController : Controller
             User user = await _userHelper.GetUserAsync(model.Email);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "No se ha encontrado ningún usuario registrado con ese Email.");
+                _flashMessage.Danger("El email no corresponde a ningún usuario registrado.");
                 return View(model);
             }
             string myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
@@ -315,8 +318,8 @@ public class AccountController : Controller
                 $"<h1>Virtual Sales WareHouse - Recuperación de Contraseña</h1>" +
                     $"Para recuperar tu contraseña, por favor hacer click en el siguiente enlace:, " +
                     $"<p><a href= \"{link}\">Recuperar Contraseña</a></p>");
-            ViewBag.Message = "Las instrucciones para recuperar la contraseña han sido enviadas a su correo.";
-            return View();
+            _flashMessage.Info("Las instrucciones para recuperar la contraseña han sido enviadas a su correo.");
+            return RedirectToAction(nameof(Login));
         }
         return View(model);
     }
@@ -337,14 +340,15 @@ public class AccountController : Controller
                 IdentityResult result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
                 if (result.Succeeded)
                 {
-                    ViewBag.Message = "La contraseña ha sido cambiada exitosamente.";
-                    return View();
+                    _flashMessage.Info("Contraseña cambiada con éxito.");
+                    return RedirectToAction(nameof(Login));
+
                 }
-                ViewBag.Message = "Error mientras se intentaba cambiar la contraseña.";
+                _flashMessage.Danger("Error al cambiar la contraseña.");
                 return View(model);
             }            
         }
-        ViewBag.Message = "Usuario no encontrado.";
+        _flashMessage.Danger("Usuario no encontrado.");
         return View(model);
     }
 }
