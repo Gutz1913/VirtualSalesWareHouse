@@ -167,6 +167,7 @@ public class CountriesController : Controller
         var country = await _context.Countries.FindAsync(id);
         _context.Countries.Remove(country);
         await _context.SaveChangesAsync();
+        _flashMessage.Info("Registro borrado");
         return RedirectToAction(nameof(Index));
     }
 

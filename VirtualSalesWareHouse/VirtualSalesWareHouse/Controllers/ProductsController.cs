@@ -378,13 +378,14 @@ public class ProductsController : Controller
             .FirstOrDefaultAsync(p => p.Id == model.Id);
 
         _context.Products.Remove(product);
+        _flashMessage.Info("Registro borrado");
         await _context.SaveChangesAsync();
 
         foreach (ProductImage productImage in product.ProductImages)
         {
             await _blobHelper.DeleteBlobAsync(productImage.ImageId, "products");
         }
-
+        _flashMessage.Info("Registro borrado");
         return RedirectToAction(nameof(Index));
     }
 }

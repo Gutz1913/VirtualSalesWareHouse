@@ -285,6 +285,7 @@ public class HomeController : Controller
 
         _context.TemporalSales.Remove(temporalSale);
         await _context.SaveChangesAsync();
+        _flashMessage.Info("Registro borrado");
         return RedirectToAction(nameof(ShowCart));
     }
 

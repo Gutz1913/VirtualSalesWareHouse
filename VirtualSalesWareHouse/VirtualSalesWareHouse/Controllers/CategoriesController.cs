@@ -158,6 +158,7 @@ public class CategoriesController : Controller
         }
 
         await _context.SaveChangesAsync();
+        _flashMessage.Info("Registro borrado");
         return RedirectToAction(nameof(Index));
     }
 }
