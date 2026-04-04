@@ -49,6 +49,9 @@ public class SeedDb
             await AddProductAsync("Xbox Series", 3500000M, 2F, new List<string>() { "Video Juegos", "Tecnología", "Electrónicos", "Gamer" }, new List<string>() { "xboxseries1.png" });
             await AddProductAsync("Play Station 5", 3800000M, 10F, new List<string>() { "Video Juegos", "Tecnología", "Gamer", "Electrónicos" }, new List<string>() { "playstation51.png", "playstation52.png", "playstation53.png", "playstation54.png", "playstation55.png" });
             await AddProductAsync("Nintendo Switch 2", 2850000M, 10F, new List<string>() { "Video Juegos", "Tecnología", "Gamer", "Electrónicos" }, new List<string>() { "nintendoswitch1.png", "nintendoswitch2.png" });
+            await AddProductAsync("Arnes para mascota", 35000M, 20F, new List<string>() { "Mascotas" }, new List<string>() { "arnes1.png" });
+            await AddProductAsync("Casco Motocicleta", 450000M, 20F, new List<string>() { "Accesorios Para Motocicletas" }, new List<string>() { "casco1.png", "casco2.png", "casco3.png" });
+            await AddProductAsync("Game Boy", 1850000M, 10F, new List<string>() { "Video Juegos", "Tecnología", "Gamer", "Electrónicos" }, new List<string>() { "gameboy1.png", "gameboy2.png" });
             await _context.SaveChangesAsync();
         }
     }
@@ -120,6 +123,7 @@ public class SeedDb
             _context.Categories.Add(new Category { Name = "Gamer" });
             _context.Categories.Add(new Category { Name = "Apple" });
             _context.Categories.Add(new Category { Name = "Calzado" });
+            _context.Categories.Add(new Category { Name = "Accesorios Para Motocicletas" });
             await _context.SaveChangesAsync();
         }
     }
