@@ -185,13 +185,9 @@ public class CountriesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> EditState(int? id)
+    [NoDirectAccess]
+    public async Task<IActionResult> EditState(int id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
         var state = await _context.States
             .Include(s => s.Country)
             .FirstOrDefaultAsync(s => s.Id == id);
@@ -228,8 +224,12 @@ public class CountriesController : Controller
                     Name = model.Name,
                 };
                 _context.Update(state);
+                Country country = await _context.Countries
+                    .Include(c => c.States)
+                    .ThenInclude(s => s.Cities)
+                    .FirstOrDefaultAsync(c => c.Id == model.CountryId);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Details), new { Id = model.CountryId });
+                return Json(new { isValid = true, html = ModalHelper.RenderRazorViewToString(this, "_ViewAllStates", country) });
             }
             catch (DbUpdateException dbUpdateException)
             {
@@ -247,7 +247,7 @@ public class CountriesController : Controller
                 _flashMessage.Danger(exception.Message);
             }
         }
-        return View(model);
+        return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "EditState", model) });
     }
 
     [HttpGet]
