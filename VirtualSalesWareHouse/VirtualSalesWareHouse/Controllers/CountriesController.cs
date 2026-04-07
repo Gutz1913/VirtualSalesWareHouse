@@ -269,7 +269,6 @@ public class CountriesController : Controller
         return View(state);
     }
 
-    [HttpGet]
     public async Task<IActionResult> DeleteState(int? id)
     {
         if (id == null)
@@ -277,7 +276,7 @@ public class CountriesController : Controller
             return NotFound();
         }
 
-        var state = await _context.States
+        State state = await _context.States
             .Include(s => s.Country)
             .FirstOrDefaultAsync(s => s.Id == id);
         if (state == null)
@@ -285,21 +284,20 @@ public class CountriesController : Controller
             return NotFound();
         }
 
-        return View(state);
+        try
+        {
+            _context.States.Remove(state);
+            await _context.SaveChangesAsync();
+            _flashMessage.Info("Registro borrado.");
+        }
+        catch
+        {
+            _flashMessage.Danger("No se puede borrar el estado / departamento porque tiene registros relacionados.");
+        }
+
+        return RedirectToAction(nameof(Details), new { Id = state.Country.Id });
     }
 
-
-    [HttpPost, ActionName("DeleteState")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteStateConfirmed(int id)
-    {
-        var state = await _context.States
-            .Include(s => s.Country)
-            .FirstOrDefaultAsync(s => s.Id == id);
-        _context.States.Remove(state);
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Details), new { Id = state.Country.Id});
-    }
 
     [HttpGet]
     public async Task<IActionResult> AddCity(int? id)
@@ -444,6 +442,35 @@ public class CountriesController : Controller
 
         return View(city);
     }
+
+    [NoDirectAccess]
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        Country country = await _context.Countries.FirstOrDefaultAsync(c => c.Id == id);
+        if (country == null)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            _context.Countries.Remove(country);
+            await _context.SaveChangesAsync();
+            _flashMessage.Info("Registro borrado.");
+        }
+        catch
+        {
+            _flashMessage.Danger("No se puede borrar el país porque tiene registros relacionados.");
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
 
     [HttpGet]
     public async Task<IActionResult> DeleteCity(int? id)
