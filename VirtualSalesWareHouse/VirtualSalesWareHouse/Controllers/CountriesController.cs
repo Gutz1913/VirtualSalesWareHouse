@@ -95,7 +95,7 @@ public class CountriesController : Controller
                     isValid = true,
                     html = ModalHelper.RenderRazorViewToString(
                         this,
-                        "_ViewAll",
+                        "_ViewAllCountries",
                         _context.Countries
                             .Include(c => c.States)
                             .ThenInclude(s => s.Cities)
@@ -298,13 +298,9 @@ public class CountriesController : Controller
 
 
     [HttpGet]
+    [NoDirectAccess]
     public async Task<IActionResult> AddCity(int? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
         var state = await _context.States.FindAsync(id);
         if (state == null)
         {
@@ -326,22 +322,26 @@ public class CountriesController : Controller
     {
         if (ModelState.IsValid)
         {
+            State state = await _context.States.FindAsync(model.StateId);
+            City city = new()
+            {
+                State = state,
+                Name = model.Name
+            };
+            _context.Add(city);
             try
             {
-                City city = new()
-                {
-                    State = await _context.States.FindAsync(model.StateId),
-                    Name = model.Name,
-                };
-                _context.Add(city);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(DetailsState), new { Id = model.StateId });
+                state = await _context.States
+                    .Include(s => s.Cities)
+                    .FirstOrDefaultAsync(c => c.Id == model.StateId);
+                return Json(new { isValid = true, html = ModalHelper.RenderRazorViewToString(this, "_ViewAllCities", state) });
             }
             catch (DbUpdateException dbUpdateException)
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    _flashMessage.Danger("Ya existe una ciudad con el mismo nombre en este Departamento / Estado.");
+                    _flashMessage.Danger("Ya existe una ciudad con el mismo nombre.");
                 }
                 else
                 {
@@ -353,17 +353,15 @@ public class CountriesController : Controller
                 _flashMessage.Danger(exception.Message);
             }
         }
-        return View(model);
+
+        return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "CreateCity", model) });
     }
 
-    [HttpGet]
-    public async Task<IActionResult> EditCity(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
-        }
 
+    [HttpGet]
+    [NoDirectAccess]
+    public async Task<IActionResult> EditCity(int id)
+    {
         var city = await _context.Cities
             .Include(c => c.State)
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -401,7 +399,11 @@ public class CountriesController : Controller
                 };
                 _context.Update(city);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(DetailsState), new { Id = model.StateId });
+                State state = await _context.States
+                    .Include(s => s.Cities)
+                    .FirstOrDefaultAsync(c => c.Id == model.StateId);
+                _flashMessage.Confirmation("Registro actualizado.");
+                return Json(new { isValid = true, html = ModalHelper.RenderRazorViewToString(this, "_ViewAllCities", state) });
             }
             catch (DbUpdateException dbUpdateException)
             {
@@ -419,26 +421,7 @@ public class CountriesController : Controller
                 _flashMessage.Danger(exception.Message);
             }
         }
-        return View(model);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> DetailsCity(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
-        var city = await _context.Cities
-            .Include(c => c.State)
-            .FirstOrDefaultAsync(c => c.Id == id);
-        if (city == null)
-        {
-            return NotFound();
-        }
-
-        return View(city);
+        return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "EditCity", model) });
     }
 
     [NoDirectAccess]
@@ -470,7 +453,6 @@ public class CountriesController : Controller
     }
 
 
-    [HttpGet]
     public async Task<IActionResult> DeleteCity(int? id)
     {
         if (id == null)
@@ -478,16 +460,28 @@ public class CountriesController : Controller
             return NotFound();
         }
 
-        var city = await _context.Cities
+        City city = await _context.Cities
             .Include(c => c.State)
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .FirstOrDefaultAsync(c => c.Id == id);
         if (city == null)
         {
             return NotFound();
         }
 
-        return View(city);
+        try
+        {
+            _context.Cities.Remove(city);
+            await _context.SaveChangesAsync();
+        }
+        catch
+        {
+            _flashMessage.Danger("No se puede borrar la ciudad porque tiene registros relacionados.");
+        }
+
+        _flashMessage.Info("Registro borrado.");
+        return RedirectToAction(nameof(DetailsState), new { Id = city.State.Id });
     }
+
 
 
     [HttpPost, ActionName("DeleteCity")]
