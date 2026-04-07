@@ -124,13 +124,9 @@ public class CountriesController : Controller
 
 
     [HttpGet]
-    public async Task<IActionResult> AddState(int? id)
+    [NoDirectAccess]
+    public async Task<IActionResult> AddState(int id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
         var country = await _context.Countries.FindAsync(id);
         if (country == null)
         {
@@ -157,12 +153,17 @@ public class CountriesController : Controller
                 State state = new()
                 {
                     Cities = new List<City>(),
-                    Country = await _context.Countries.FindAsync(model.CountryId), 
+                    Country = await _context.Countries.FindAsync(model.CountryId),
                     Name = model.Name,
                 };
                 _context.Add(state);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Details), new { Id = model.CountryId});
+                Country country = await _context.Countries
+                    .Include(c => c.States)
+                    .ThenInclude(s => s.Cities)
+                    .FirstOrDefaultAsync(c => c.Id == model.CountryId);
+                _flashMessage.Info("Registro creado.");
+                return Json(new { isValid = true, html = ModalHelper.RenderRazorViewToString(this, "_ViewAllStates", country) });
             }
             catch (DbUpdateException dbUpdateException)
             {
@@ -180,7 +181,7 @@ public class CountriesController : Controller
                 _flashMessage.Danger(exception.Message);
             }
         }
-        return View(model);
+        return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "AddState", model) });
     }
 
     [HttpGet]
@@ -193,7 +194,7 @@ public class CountriesController : Controller
 
         var state = await _context.States
             .Include(s => s.Country)
-            .FirstOrDefaultAsync(s => s.Id == id); 
+            .FirstOrDefaultAsync(s => s.Id == id);
         if (state == null)
         {
             return NotFound();
@@ -269,13 +270,9 @@ public class CountriesController : Controller
         return View(state);
     }
 
-    public async Task<IActionResult> DeleteState(int? id)
+    [NoDirectAccess]
+    public async Task<IActionResult> DeleteState(int id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
         State state = await _context.States
             .Include(s => s.Country)
             .FirstOrDefaultAsync(s => s.Id == id);
@@ -503,4 +500,4 @@ public class CountriesController : Controller
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(DetailsState), new { Id = city.State.Id });
     }
-} 
+}
