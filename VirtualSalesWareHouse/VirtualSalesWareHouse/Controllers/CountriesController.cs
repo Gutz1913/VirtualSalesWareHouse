@@ -146,13 +146,8 @@ public class CountriesController : Controller
 
 
     [NoDirectAccess]
-    public async Task<IActionResult> Delete(int? id)
+    public async Task<IActionResult> Delete(int id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
         Country country = await _context.Countries.FirstOrDefaultAsync(c => c.Id == id);
         if (country == null)
         {
