@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Vereyon.Web;
 using VirtualSalesWareHouse.Data;
 using VirtualSalesWareHouse.Data.Entities;
+using VirtualSalesWareHouse.Helpers;
 using VirtualSalesWareHouse.Models;
+using static VirtualSalesWareHouse.Helpers.ModalHelper;
 
 namespace VirtualSalesWareHouse.Controllers;
 
@@ -143,7 +145,7 @@ public class CountriesController : Controller
     }
 
 
-    [HttpGet]
+    [NoDirectAccess]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null)
@@ -151,28 +153,97 @@ public class CountriesController : Controller
             return NotFound();
         }
 
-        var country = await _context.Countries
-            .Include(c => c.States)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        Country country = await _context.Countries.FirstOrDefaultAsync(c => c.Id == id);
         if (country == null)
         {
             return NotFound();
         }
 
-        return View(country);
-    }
+        try
+        {
+            _context.Countries.Remove(country);
+            await _context.SaveChangesAsync();
+            _flashMessage.Info("Registro borrado.");
+        }
+        catch
+        {
+            _flashMessage.Danger("No se puede borrar el país porque tiene registros relacionados.");
+        }
 
-    
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-        var country = await _context.Countries.FindAsync(id);
-        _context.Countries.Remove(country);
-        await _context.SaveChangesAsync();
-        _flashMessage.Info("Registro borrado");
         return RedirectToAction(nameof(Index));
     }
+
+    [NoDirectAccess]
+    public async Task<IActionResult> AddOrEdit(int id = 0)
+    {
+        if (id == 0)
+        {
+            return View(new Country());
+        }
+        else
+        {
+            Country country = await _context.Countries.FindAsync(id);
+            if (country == null)
+            {
+                return NotFound();
+            }
+
+            return View(country);
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddOrEdit(int id, Country country)
+    {
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                if (id == 0) //Insert
+                {
+                    _context.Add(country);
+                    await _context.SaveChangesAsync();
+                    _flashMessage.Info("Registro creado.");
+                }
+                else //Update
+                {
+                    _context.Update(country);
+                    await _context.SaveChangesAsync();
+                    _flashMessage.Info("Registro actualizado.");
+                }
+                return Json(new
+                {
+                    isValid = true,
+                    html = ModalHelper.RenderRazorViewToString(
+                        this,
+                        "_ViewAll",
+                        _context.Countries
+                            .Include(c => c.States)
+                            .ThenInclude(s => s.Cities)
+                            .ToList())
+                });
+            }
+            catch (DbUpdateException dbUpdateException)
+            {
+                if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                {
+                    _flashMessage.Danger("Ya existe un país con el mismo nombre.");
+                }
+                else
+                {
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
+                }
+            }
+            catch (Exception exception)
+            {
+                _flashMessage.Danger(exception.Message);
+            }
+        }
+
+        return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "AddOrEdit", country) });
+    }
+
 
     [HttpGet]
     public async Task<IActionResult> AddState(int? id)
