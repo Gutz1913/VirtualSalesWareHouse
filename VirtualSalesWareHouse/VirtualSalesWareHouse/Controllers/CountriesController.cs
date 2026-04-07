@@ -23,7 +23,10 @@ public class CountriesController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        return View(await _context.Countries.Include(c => c.States).ToListAsync());
+        return View(await _context.Countries
+            .Include(c => c.States)
+            .ThenInclude(c => c.Cities)
+            .ToListAsync());
     }
 
     [HttpGet]
