@@ -229,6 +229,7 @@ public class CountriesController : Controller
                     .ThenInclude(s => s.Cities)
                     .FirstOrDefaultAsync(c => c.Id == model.CountryId);
                 await _context.SaveChangesAsync();
+                _flashMessage.Confirmation("Registro actualizado.");
                 return Json(new { isValid = true, html = ModalHelper.RenderRazorViewToString(this, "_ViewAllStates", country) });
             }
             catch (DbUpdateException dbUpdateException)
