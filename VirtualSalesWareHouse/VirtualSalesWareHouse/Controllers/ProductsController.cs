@@ -239,6 +239,7 @@ public class ProductsController : Controller
             {
                 _context.Add(productImage);
                 await _context.SaveChangesAsync();
+                _flashMessage.Confirmation("Imagen agregada.");
                 return Json(new
                 {
                     isValid = true,
@@ -327,6 +328,7 @@ public class ProductsController : Controller
             {
                 _context.Add(productCategory);
                 await _context.SaveChangesAsync();
+                _flashMessage.Confirmation("Categoría agregada.");
                 return Json(new
                 {
                     isValid = true,
