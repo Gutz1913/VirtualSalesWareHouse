@@ -117,13 +117,9 @@ public class ProductsController : Controller
         return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "Create", model) });
     }
 
-    public async Task<IActionResult> Edit(int? id)
+    [NoDirectAccess]
+    public async Task<IActionResult> Edit(int id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
         Product product = await _context.Products.FindAsync(id);
         if (product == null)
         {
@@ -160,7 +156,15 @@ public class ProductsController : Controller
             product.Stock = model.Stock;
             _context.Update(product);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            _flashMessage.Confirmation("Registro actualizado.");
+            return Json(new
+            {
+                isValid = true,
+                html = ModalHelper.RenderRazorViewToString(this, "_ViewAllProducts", _context.Products
+                .Include(p => p.ProductImages)
+                .Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category).ToList())
+            });
         }
         catch (DbUpdateException dbUpdateException)
         {
@@ -177,7 +181,7 @@ public class ProductsController : Controller
         {
             _flashMessage.Danger(ex.Message);
         }
-        return View(model);
+        return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "Edit", model) });
     }
 
     public async Task<IActionResult> Details(int? id)
