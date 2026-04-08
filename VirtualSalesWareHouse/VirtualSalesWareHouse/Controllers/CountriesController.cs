@@ -299,7 +299,7 @@ public class CountriesController : Controller
 
     [HttpGet]
     [NoDirectAccess]
-    public async Task<IActionResult> AddCity(int? id)
+    public async Task<IActionResult> AddCity(int id)
     {
         var state = await _context.States.FindAsync(id);
         if (state == null)
@@ -335,6 +335,7 @@ public class CountriesController : Controller
                 state = await _context.States
                     .Include(s => s.Cities)
                     .FirstOrDefaultAsync(c => c.Id == model.StateId);
+                _flashMessage.Confirmation("Registro creado.");
                 return Json(new { isValid = true, html = ModalHelper.RenderRazorViewToString(this, "_ViewAllCities", state) });
             }
             catch (DbUpdateException dbUpdateException)
@@ -354,7 +355,7 @@ public class CountriesController : Controller
             }
         }
 
-        return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "CreateCity", model) });
+        return Json(new { isValid = false, html = ModalHelper.RenderRazorViewToString(this, "AddCity", model) });
     }
 
 
@@ -452,14 +453,9 @@ public class CountriesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-
-    public async Task<IActionResult> DeleteCity(int? id)
+    [NoDirectAccess]
+    public async Task<IActionResult> DeleteCity(int id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
-
         City city = await _context.Cities
             .Include(c => c.State)
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -479,10 +475,8 @@ public class CountriesController : Controller
         }
 
         _flashMessage.Info("Registro borrado.");
-        return RedirectToAction(nameof(DetailsState), new { Id = city.State.Id });
+        return RedirectToAction(nameof(DetailsState), new { id = city.State.Id });
     }
-
-
 
     [HttpPost, ActionName("DeleteCity")]
     [ValidateAntiForgeryToken]
